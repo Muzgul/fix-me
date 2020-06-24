@@ -1,7 +1,8 @@
 package router;
 
-
 import java.nio.channels.AsynchronousSocketChannel;
+import java.util.concurrent.Future;
+import java.nio.ByteBuffer;
 
 public class MarketHandler extends Handler {
     @Override
@@ -10,6 +11,13 @@ public class MarketHandler extends Handler {
             this.next.handle(market, attachment);
         else {
             try {
+                Integer id = Router.id_track++;
+                Router.routerTable.put(id, market);
+                String str = Integer.toString(id);
+                Future<Integer> writeval = market.write(
+                    ByteBuffer.wrap(str.getBytes()));
+                System.out.println("Assigning Market ID: "+str);
+                writeval.get();
                 // Market is connected and listening - Open thread for new Market
                 Router.executor.submit(new MarketServer());
                 // Successful market connection - Open thread for brokers

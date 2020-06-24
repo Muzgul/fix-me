@@ -13,6 +13,8 @@ import java.net.InetSocketAddress;
  */
 public class Market 
 {
+    private static Integer id = null;
+
     private static Map<String, Integer> items = new HashMap<>(){
         {
             put("some", 2);
@@ -28,9 +30,19 @@ public class Market
             // socket.connect(new InetSocketAddress("localhost", 5000), "Test message", Handler.sendHandler());          // Attempt to connect to the 'router' - localhost:5000
             Future <Void> result = market.connect(new InetSocketAddress("localhost", 5001));                             // Attempt to connect to the 'router' - localhost:5000
             result.get();
+            ByteBuffer buffer = ByteBuffer.allocate(1024);
+
+            // read into buffer
+            Future<Integer> readId = market.read(buffer);
+            readId.get();
+            String assignedID = new String(buffer.array()).trim();
+            System.out.println("Assigned ID: "
+                + assignedID);
+            id = Integer.parseInt(assignedID);
+            buffer.clear();
             // connected - forever listen for new brokers
             while(true){
-                ByteBuffer buffer = ByteBuffer.allocate(1024);
+                buffer = ByteBuffer.allocate(1024);
 
                 // read into buffer
                 Future<Integer> readval = market.read(buffer);
@@ -79,10 +91,10 @@ public class Market
             item != null && quantity != null && // items are present
             items.get(item) != null && // item exists in db
             items.get(item) >= Integer.parseInt(quantity)){ // has quanitity
-            result = String.format("0=%s|1=%s|2=%s|3=%s|4=%s|6=%s", "10", item, quantity, keyvalue.get("0"), keyvalue.get("4"), "EXECUTED");
+            result = String.format("0=%s|1=%s|2=%s|3=%s|4=%s|6=%s", id, item, quantity, keyvalue.get("0"), keyvalue.get("4"), "EXECUTED");
             items.put(item, items.get(item) - Integer.parseInt(quantity));
         } else {
-            result = String.format("0=%s|1=%s|2=%s|3=%s|4=%s|6=%s", "10", item, quantity, keyvalue.get("0"), keyvalue.get("4"), "REJECTED");
+            result = String.format("0=%s|1=%s|2=%s|3=%s|4=%s|6=%s", id, item, quantity, keyvalue.get("0"), keyvalue.get("4"), "REJECTED");
         }
 
         return String.format("%s|10=%d", result, Utilities.calculateChecksum(result));

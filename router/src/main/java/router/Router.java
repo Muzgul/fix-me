@@ -1,9 +1,13 @@
 package router;
 
 import java.nio.channels.AsynchronousServerSocketChannel;
+import java.nio.channels.AsynchronousSocketChannel;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Hello world!
  *
@@ -15,6 +19,10 @@ public class Router
     static AsynchronousServerSocketChannel markets;
 
     static AsynchronousServerSocketChannel brokers;
+
+    static Integer id_track = 100000;
+
+    static Map<Integer, AsynchronousSocketChannel> routerTable = new HashMap<>();
 
     static Handler getHandlerChain(){
         Handler chain       = new MarketHandler();

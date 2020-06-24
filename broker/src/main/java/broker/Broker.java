@@ -13,22 +13,33 @@ import java.net.InetSocketAddress;
  */
 public class Broker 
 {
+    static Integer id = null;
     public static void main( String[] args )
     {
         System.out.println( "Broker: Hello World!" );
         // String market, String item, String quantity, String price
-        if (args.length != 5){
+        if (args.length != 4){
             Utilities.println("Please enter the correct arguments: MARKET ITEM QUANTITY PRICE");
             return ;
         }
         try {
+            
             AsynchronousSocketChannel broker = AsynchronousSocketChannel.open();
             Future <Void> result = broker.connect(new InetSocketAddress("localhost", 5000));
             result.get();
             // String str= buyMessage("01", args[0], args[1], args[2], args[3]);
             
-            String str= buyMessage("01", args[0], args[1], args[2], args[3]);
             ByteBuffer buffer = ByteBuffer.allocate(1024);
+             // read into buffer
+             Future<Integer> readId = broker.read(buffer);
+             readId.get();
+             String assignedID = new String(buffer.array()).trim();
+             System.out.println("Assigned ID: "
+                 + assignedID);
+             id = Integer.parseInt(assignedID);
+             buffer.flip();
+
+            String str= buyMessage(Integer.toString(id), args[0], args[1], args[2], args[3]);
 
             // write into buffer
             Future<Integer> writeval = broker.write(
